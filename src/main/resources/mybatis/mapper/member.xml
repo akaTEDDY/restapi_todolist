@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Member">
+
+    <insert id="createMember" parameterType="Member">
+        <![CDATA[
+		    insert into members (nick, pw, email) values (#{nick}, #{pw}, #{email});
+	    ]]>
+    </insert>
+
+    <update id="updateMember" parameterType="Member">
+        <![CDATA[
+		    update members set pw = #{pw}, email = #{email} where nick = #{nick};
+	    ]]>
+    </update>
+
+    <delete id="deleteMember" parameterType="string">
+        <![CDATA[
+		    delete from members where nick = #{nick};
+	    ]]>
+    </delete>
+
+    <select id="findMember" parameterType="string" resultType="Member">
+        <![CDATA[
+		    select * from members where nick = #{nick};
+	    ]]>
+    </select>
+
+    <select id="findAllMembers" resultType="Member" resultSets="list">
+    <![CDATA[
+		    select * from members;
+	    ]]>
+    </select>
+
+    <select id="checkMember" parameterType="string" resultType="int">
+		    select COUNT(*) from members where nick = #{nick};
+    </select>
+
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <typeAliases>
+        <typeAlias type="com.practice.restapi_todolist.domain.Member" alias="Member"/>
+<!--        <typeAlias type="com.To_Do_List.domain.Follow" alias="Follow"/>-->
+<!--        <typeAlias type="com.To_Do_List.domain.Item" alias="Item"/>-->
+    </typeAliases>
+    <mappers>
+        <mapper resource="mybatis/mapper/member.xml" />
+<!--        <mapper resource="mybatis/mapper/follow.xml" />-->
+<!--        <mapper resource="mybatis/mapper/item.xml" />-->
+    </mappers>
+</configuration>
