@@ -48,9 +48,9 @@ public class MemberService implements UserDetailsService {
         Member m = optMember.orElse(null);
         if(m == null) return null;
 
-        if(member.getNick() != null)     m.setNick(member.getNick());
-        if(member.getPw() != null)       m.setPw(member.getPw());
-        if(member.getEmail() != null)    m.setEmail(member.getEmail());
+        if(member.getNick().isEmpty())     m.setNick(member.getNick());
+        if(member.getPw().isEmpty())       m.setPw(member.getPw());
+        if(member.getEmail().isEmpty())    m.setEmail(member.getEmail());
 
         // member update 요청
         // 결과 return

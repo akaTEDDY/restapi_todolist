@@ -53,6 +53,31 @@ public class MemberControllerTest {
     }
 
     @Test
+    public void create_nullNickPw() throws Exception {
+        Member member = new Member();
+        member.setPw("test");
+        member.setEmail("test@test.com");
+
+        String strContent = objectMapper.writeValueAsString(member);
+
+        mvc.perform(post("/member").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void create_duplicateNick() throws Exception {
+        Member member = new Member();
+        member.setPw("smdjd");
+        member.setPw("smdjd");
+        member.setEmail("test@test.com");
+
+        String strContent = objectMapper.writeValueAsString(member);
+
+        mvc.perform(post("/member").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void update() throws Exception {
         Member member = new Member();
         member.setNick("smdjd");
@@ -66,9 +91,41 @@ public class MemberControllerTest {
     }
 
     @Test
+    public void update_NotExistMember() throws Exception {
+        Member member = new Member();
+        member.setNick("smdjd");
+        member.setPw("smdjd");
+        member.setEmail("smdjd@smdjd.com");
+
+        String strContent = objectMapper.writeValueAsString(member);
+
+        mvc.perform(put("/member/sfsdfdsfsdf").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void update_NullMember() throws Exception {
+        Member member = new Member();
+        member.setNick("");
+        member.setPw("smdjd");
+        member.setEmail("smdjd@smdjd.com");
+
+        String strContent = objectMapper.writeValueAsString(member);
+
+        mvc.perform(put("/member/smdjd").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void findMember() throws Exception {
         mvc.perform(get("/member?nick=smdjd"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void findMember_NotExistNick() throws Exception {
+        mvc.perform(get("/member?nick=sfdsfdsasdf"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -77,6 +134,7 @@ public class MemberControllerTest {
                 .andExpect(status().isOk());
     }
 
+
     @Test
     public void findAllMember2() throws Exception {
         mvc.perform(get("/member/smdjd"))
@@ -84,8 +142,20 @@ public class MemberControllerTest {
     }
 
     @Test
+    public void findAllMember2_NotExistNick() throws Exception {
+        mvc.perform(get("/member/sfragsefsgsrgsf"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void deleteMember() throws Exception {
         mvc.perform(delete("/member/test"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteMember_NotExistNick() throws Exception {
+        mvc.perform(delete("/member/sfawefswfefsgathbvr"))
+                .andExpect(status().isNotFound());
     }
 }
