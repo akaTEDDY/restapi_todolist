@@ -14,6 +14,6 @@
 ### 2021-04-14
 * 멤버 CRUD 완료
 > Response 구조 일반, 정형화 필요 있음...
-> 기능 별 Http Status 정리 필요
+>> 기능 별 Http Status 정리 필요
 * Item CRUD 구현 필요
  

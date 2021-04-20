@@ -4,11 +4,11 @@
     <typeAliases>
         <typeAlias type="com.practice.restapi_todolist.domain.Member" alias="Member"/>
 <!--        <typeAlias type="com.To_Do_List.domain.Follow" alias="Follow"/>-->
-<!--        <typeAlias type="com.To_Do_List.domain.Item" alias="Item"/>-->
+        <typeAlias type="com.practice.restapi_todolist.domain.Item" alias="Item"/>
     </typeAliases>
     <mappers>
         <mapper resource="mybatis/mapper/member.xml" />
 <!--        <mapper resource="mybatis/mapper/follow.xml" />-->
-<!--        <mapper resource="mybatis/mapper/item.xml" />-->
+        <mapper resource="mybatis/mapper/item.xml" />
     </mappers>
 </configuration>

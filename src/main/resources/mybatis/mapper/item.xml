@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Item">
+
+    <insert id="createItem" parameterType="Item">
+        <![CDATA[
+		    insert into items (title, note, status, regdate, duedate, usernick)
+		    values (#{title}, #{note}, #{status}, #{regDate}, #{dueDate}, #{userNick});
+	    ]]>
+    </insert>
+
+    <update id="updateItem" parameterType="Item">
+        <![CDATA[
+		    update items set title=#{title}, note=#{note}, status=#{status}, duedate=#{dueDate}, usernick=#{userNick}
+		    where id = #{id};
+	    ]]>
+    </update>
+
+    <delete id="deleteItem" parameterType="long">
+        <![CDATA[
+		    delete from items where id = #{id};
+	    ]]>
+    </delete>
+
+    <select id="checkMember" parameterType="string" resultType="int">
+        <![CDATA[
+		    select COUNT(*) from members where nick = #{usernick};
+	    ]]>
+    </select>
+
+    <select id="findItemByUserNick" parameterType="string" resultType="Item" resultSets="list">
+        <![CDATA[
+		    select * from items where usernick = #{usernick};
+	    ]]>
+    </select>
+
+    <select id="findItemById" parameterType="long" resultType="Item">
+        <![CDATA[
+		    select * from items where id = #{id};
+	    ]]>
+    </select>
+
+    <select id="findItemByItem" parameterType="Item" resultType="Item">
+        <![CDATA[
+		    select * from items where title=#{title} and note=#{note} and status=#{status} and duedate=#{dueDate} and usernick=#{userNick};
+	    ]]>
+    </select>
+
+    <select id="checkItem" parameterType="long" resultType="int">
+        <![CDATA[
+		    select COUNT(*) from items where id = #{id};
+	    ]]>
+    </select>
+
+    <select id="findAllItems" resultType="Item" resultSets="list">
+        <![CDATA[
+		    select * from items;
+	    ]]>
+    </select>
+
+</mapper>

@@ -11,7 +11,7 @@
 
     <update id="updateMember" parameterType="Member">
         <![CDATA[
-		    update members set pw = #{pw}, email = #{email} where nick = #{nick};
+		    update members set pw = #{pw}, email = #{email} where id = #{id};
 	    ]]>
     </update>
 

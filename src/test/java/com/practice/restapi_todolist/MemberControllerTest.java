@@ -113,7 +113,7 @@ public class MemberControllerTest {
         String strContent = objectMapper.writeValueAsString(member);
 
         mvc.perform(put("/member/smdjd").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     @Test

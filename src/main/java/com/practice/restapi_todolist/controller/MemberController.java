@@ -6,8 +6,8 @@ import com.practice.restapi_todolist.domain.Member;
 import com.practice.restapi_todolist.exception.CustomBadRequestException;
 import com.practice.restapi_todolist.exception.CustomException;
 import com.practice.restapi_todolist.exception.CustomNotFoundException;
+import com.practice.restapi_todolist.exception.CustomTooManyRequestsException;
 import com.practice.restapi_todolist.service.MemberService;
-import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ import java.util.*;
 public class MemberController {
 
     private MemberService memberService;
-    private ObjectMapper m = new ObjectMapper();
+    private ObjectMapper mapper = new ObjectMapper();
 
     @Autowired
     public MemberController(MemberService memberService) {
@@ -40,7 +40,7 @@ public class MemberController {
 
         // member 생성 요청
         Member createdMember = Optional.ofNullable(memberService.createMember(member))
-                                    .orElseThrow(() -> new CustomBadRequestException(HttpStatus.BAD_REQUEST, m.convertValue(member, Map.class), "주어진 파라미터로 멤버 생성이 불가합니다."));
+                                    .orElseThrow(() -> new CustomTooManyRequestsException(HttpStatus.TOO_MANY_REQUESTS, mapper.convertValue(member, Map.class), "주어진 파라미터로 멤버 생성이 불가합니다."));
 
         // response return
         HttpHeaders headers = new HttpHeaders();
@@ -55,8 +55,8 @@ public class MemberController {
             throw new CustomBadRequestException(HttpStatus.BAD_REQUEST, Map.of("nick", nick == null ? "null" : ""), "입력한 nick이 잘못된 값입니다.");
 
         // member 수정 요청
-        Member updatedMember = Optional.ofNullable(memberService.updateMember(nick, member))
-                                        .orElseThrow(() -> new CustomNotFoundException(HttpStatus.NOT_FOUND,Map.of("nick", nick), "입력한 nick을 가진 멤버를 찾을 수 없습니다."));
+        Member updatedMember = memberService.updateMember(nick, member);
+
         // response return
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
@@ -70,8 +70,7 @@ public class MemberController {
             throw new CustomBadRequestException(HttpStatus.BAD_REQUEST, Map.of("nick", nick == null ? "null" : ""), "입력한 nick이 잘못된 값입니다.");
 
         // member 삭제 요청
-        if(!memberService.deleteMember(nick))
-            throw new CustomNotFoundException(HttpStatus.NOT_FOUND, Map.of("nick", nick), "입력한 nick을 가진 멤버를 찾을 수 없습니다.");
+        memberService.deleteMember(nick);
 
         // response return
         HttpHeaders headers = new HttpHeaders();
@@ -87,7 +86,7 @@ public class MemberController {
 
         // member 조회 요청
         Member member = Optional.ofNullable(memberService.findMember(nick))
-                                .orElseThrow(() -> new CustomNotFoundException(HttpStatus.NOT_FOUND,Map.of("nick", nick), "입력한 nick을 가진 멤버를 찾을 수 없습니다."));
+                                .orElseThrow(() -> new CustomTooManyRequestsException(HttpStatus.TOO_MANY_REQUESTS, Map.of("nick", nick), "입력한 nick을 가진 멤버를 찾을 수 없습니다."));
 
         // response return
         HttpHeaders headers = new HttpHeaders();
@@ -96,12 +95,12 @@ public class MemberController {
     }
 
     @GetMapping("/member")
-    public ResponseEntity<List<Member>> findMember_rp(@RequestParam(value = "nick", required = false) String nick) throws CustomException {
+    public ResponseEntity<List<Member>> findMember_rp(@RequestParam(value = "nick", required = false, defaultValue = "") String nick) throws CustomException {
         // request 유효성 검사
 
         // member 조회 요청
         List<Member> members = new ArrayList<>();
-        if(nick == null) {
+        if(nick.isEmpty()) {
             List<Member> optList = memberService.findAllMembers();
 
             for(int i = 0; i < optList.size(); i++) {
@@ -117,9 +116,9 @@ public class MemberController {
         }
 
         if(members.isEmpty())
-            throw new CustomNotFoundException(HttpStatus.NOT_FOUND,
-                                                (nick != null) ? Map.of("nick", nick) : null,
-                                                "입력한 nick을 가진 멤버를 찾을 수 없습니다.");
+            throw new CustomTooManyRequestsException(HttpStatus.TOO_MANY_REQUESTS,
+                                                    (nick != null) ? Map.of("nick", nick) : null,
+                                                    "입력한 nick을 가진 멤버를 찾을 수 없습니다.");
 
         // response return
         HttpHeaders headers = new HttpHeaders();
@@ -127,30 +126,15 @@ public class MemberController {
         return new ResponseEntity<>(members, headers, HttpStatus.OK);
     }
 
-    @ExceptionHandler(CustomNotFoundException.class)
-    public ResponseEntity<Map<String, String>> NotFoundExceptionHandler(CustomNotFoundException e) throws JsonProcessingException {
+
+
+
+
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<Map<String, String>> CustomExceptionHandler(CustomException e) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        Map<String, String> mapParam = e.getParam();
-        String strParam = mapper.writeValueAsString(mapParam);
-
-        Map<String, String> mapBody = new HashMap<>();
-        mapBody.put("param", strParam);
-        mapBody.put("message", e.getDescription());
-        mapBody.put("HttpState", e.getHttpStatus().toString());
-
-        return new ResponseEntity<>(mapBody, headers, e.getHttpStatus());
-    }
-
-    @ExceptionHandler(CustomBadRequestException.class)
-    public ResponseEntity<Map<String, String>> BadRequestExceptionHandler(CustomBadRequestException e) throws JsonProcessingException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-
-        ObjectMapper mapper = new ObjectMapper();
 
         Map<String, String> mapParam = e.getParam();
         String strParam = mapper.writeValueAsString(mapParam);
