@@ -76,7 +76,8 @@ public class ItemController {
             throw new CustomBadRequestException(HttpStatus.BAD_REQUEST, Map.of("id", Long.toString(id)), "입력한 id가 잘못된 값입니다.");
 
         // item 삭제 요청
-        itemService.deleteItem(id);
+        if(!itemService.deleteItem(id))
+            throw new CustomTooManyRequestsException(HttpStatus.TOO_MANY_REQUESTS,Map.of("id", Long.toString(id)), "아이템 삭제에 실패하였습니다.");
 
         // response return
         HttpHeaders headers = new HttpHeaders();
