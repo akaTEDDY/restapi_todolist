@@ -2,7 +2,6 @@ package com.practice.restapi_todolist.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practice.restapi_todolist.domain.Item;
-import com.practice.restapi_todolist.domain.Member;
 import com.practice.restapi_todolist.exception.CustomBadRequestException;
 import com.practice.restapi_todolist.exception.CustomException;
 import com.practice.restapi_todolist.exception.CustomNotFoundException;
@@ -11,27 +10,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class ItemService {
 
     private ItemRepository itemRepository;
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private SimpleDateFormat dateParse = new SimpleDateFormat("yyyy-MM-dd");
 
     @Autowired
     public ItemService(ItemRepository itemRepository) {
         this.itemRepository = itemRepository;
     }
 
-    public List<Item> createItem(Item item) throws CustomException {
+    public List<Item> createItem(Item item) throws CustomException, ParseException {
         // Item이 가진 usernick이 존재하는 user인지 확인
         if(!itemRepository.checkMember(item.getUserNick()))
             throw new CustomNotFoundException(HttpStatus.NOT_FOUND, Map.of("usernick", item.getUserNick()), "nick " + item.getUserNick() + "을 가진 Member가 존재하지 않습니다.");
 
-        // DueDate가 RegDate보다 뒤인지 확인
+        // Date 설정 + Date formatting
+        item.setRegDate(sdf.parse(sdf.format(new Date())));
+        item.setDueDate(sdf.parse(sdf.format(item.getDueDate())));
+
+        if(dateParse.format(item.getRegDate()).equals(dateParse.format(item.getDueDate())))
+            item.setRegDate(sdf.parse(sdf.format(item.getDueDate())));
+
+        // RegDate 와 DueDate 비교
         if(item.getDueDate().before(item.getRegDate()))
             throw new CustomBadRequestException(HttpStatus.BAD_REQUEST, Map.of("RegDate", item.getRegDate().toString(), "DueDate", item.getDueDate().toString()), "완료 일정이 등록 일정보다 빠릅니다.");
 
@@ -45,7 +52,7 @@ public class ItemService {
         return items;
     }
 
-    public Item updateItem(long id, Item item) throws CustomException {
+    public Item updateItem(long id, Item item) throws CustomException, ParseException {
         // id으로 findItem - A (null check)
         Optional<Item> optItem = Optional.ofNullable(findItemById(id));
 
@@ -57,8 +64,16 @@ public class ItemService {
         if(!item.getTitle().isEmpty())     i.setTitle(item.getTitle());
         if(!item.getNote().isEmpty())       i.setNote(item.getNote());
         if(!item.getStatus().isEmpty())    i.setStatus(item.getStatus());
-        if(item.getDueDate() != null)    i.setDueDate(item.getDueDate());
+        if(item.getDueDate() != null)    i.setDueDate(sdf.parse(sdf.format(item.getDueDate())));
         if(!item.getUserNick().isEmpty())    i.setUserNick(item.getUserNick());
+
+        // Item이 가진 usernick이 존재하는 user인지 확인
+        if(!itemRepository.checkMember(i.getUserNick()))
+            throw new CustomNotFoundException(HttpStatus.NOT_FOUND, Map.of("usernick", i.getUserNick()), "nick " + i.getUserNick() + "을 가진 Member가 존재하지 않습니다.");
+
+        // DueDate가 RegDate보다 뒤인지 확인
+        if(i.getDueDate().before(i.getRegDate()))
+            throw new CustomBadRequestException(HttpStatus.BAD_REQUEST, Map.of("RegDate", i.getRegDate().toString(), "DueDate", i.getDueDate().toString()), "완료 일정이 등록 일정보다 빠릅니다.");
 
         // item update 요청
         // 결과 return

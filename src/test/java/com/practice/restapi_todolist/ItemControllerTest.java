@@ -2,6 +2,7 @@ package com.practice.restapi_todolist;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practice.restapi_todolist.domain.Item;
+import com.practice.restapi_todolist.domain.LoginRequest;
 import com.practice.restapi_todolist.exception.CustomException;
 import com.practice.restapi_todolist.service.ItemService;
 import org.junit.Before;
@@ -40,44 +41,44 @@ public class ItemControllerTest {
     private ItemService itemService;
 
     @Before
-    public void setUpMockMvc() {
+    public void setUpMockMvc() throws Exception {
         this.mvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
 
     @Test
     public void create() throws Exception {
+        LoginRequest login = new LoginRequest();
+        login.setNick("smdjd");
+        login.setPw("smdjd");
+
+        String strContent = objectMapper.writeValueAsString(login);
+
+        mvc.perform(post("/login").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
         Item item = new Item();
         item.setTitle("test");
         item.setNote("test");
         item.setStatus("to_do");
-        item.setRegDate(new Date());
         item.setDueDate(new Date());
-        item.setUserNick("test");
 
-        String strContent = objectMapper.writeValueAsString(item);
+        strContent = objectMapper.writeValueAsString(item);
 
         mvc.perform(post("/item").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 
     @Test
-    public void create_NotExistUserNick() throws Exception {
-        Item item = new Item();
-        item.setTitle("test");
-        item.setNote("test");
-        item.setStatus("to_do");
-        item.setRegDate(new Date());
-        item.setDueDate(new Date());
-        item.setUserNick("sfsdfsadfsfdfdf");
-
-        String strContent = objectMapper.writeValueAsString(item);
-
-        mvc.perform(post("/item").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
     public void create_DueRegDate() throws Exception {
+        LoginRequest login = new LoginRequest();
+        login.setNick("smdjd");
+        login.setPw("smdjd");
+
+        String strContent = objectMapper.writeValueAsString(login);
+
+        mvc.perform(post("/login").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
         Date now = new Date();
         Date yesterday = new Date(now.getTime() + (1000*60*60*24*-1));
 
@@ -85,11 +86,9 @@ public class ItemControllerTest {
         item.setTitle("test");
         item.setNote("test");
         item.setStatus("to_do");
-        item.setRegDate(now);
         item.setDueDate(yesterday);
-        item.setUserNick("test");
 
-        String strContent = objectMapper.writeValueAsString(item);
+        strContent = objectMapper.writeValueAsString(item);
 
         mvc.perform(post("/item").content(strContent).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -97,7 +96,7 @@ public class ItemControllerTest {
 
     @Test
     public void update() throws Exception, CustomException {
-        long id = itemService.findItemByUserNick("test").get(0).getId();
+        long id = itemService.findItemByUserNick("smdjd").get(0).getId();
 
         Item item = new Item();
         item.setTitle("test2");
@@ -183,7 +182,7 @@ public class ItemControllerTest {
 
     @Test
     public void deleteItem() throws Exception, CustomException {
-        List<Item> items = itemService.findItemByUserNick("test");
+        List<Item> items = itemService.findItemByUserNick("smdjd");
         Item item = items.get(0);
         String url = "/item/" + item.getId();
 

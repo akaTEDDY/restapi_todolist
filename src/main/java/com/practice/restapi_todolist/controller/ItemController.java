@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.practice.restapi_todolist.domain.Item;
 import com.practice.restapi_todolist.exception.CustomBadRequestException;
 import com.practice.restapi_todolist.exception.CustomException;
-import com.practice.restapi_todolist.exception.CustomNotFoundException;
 import com.practice.restapi_todolist.exception.CustomTooManyRequestsException;
 import com.practice.restapi_todolist.service.ItemService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +12,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import java.util.*;
 
 @RestController
@@ -31,16 +34,18 @@ public class ItemController {
     }
 
     @PostMapping("/item")
-    public ResponseEntity<List<Item>> create(@RequestBody Item item) throws CustomException {
+    public ResponseEntity<List<Item>> create(@RequestBody Item item) throws CustomException, ParseException {
         // request 유효성 체크
-        if(item.getTitle().isEmpty() || item.getStatus().isEmpty() || item.getUserNick() == null || item.getUserNick().isEmpty())
+        if(item.getTitle().isEmpty() || item.getStatus().isEmpty())
             throw new CustomBadRequestException(HttpStatus.BAD_REQUEST,
                     Map.of("title", item.getTitle().isEmpty() ? "null" : item.getTitle(),
                             "status", item.getStatus().isEmpty() ? "null" : item.getStatus(),
-                            "dueDate", item.getDueDate() == null ? (new Date()).toString() : item.getDueDate().toString(),
-                            "usernick", item.getUserNick().isEmpty() ? "null" : item.getUserNick()
+                            "dueDate", item.getDueDate() == null ? (new Date()).toString() : item.getDueDate().toString()
                             ),
                     "입력한 파라미터가 올바르지 않습니다.");
+
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        item.setUserNick(userDetails.getUsername());
 
         // item 생성 요청
         List<Item> items = Optional.ofNullable(itemService.createItem(item))
@@ -53,7 +58,7 @@ public class ItemController {
     }
 
     @PutMapping("/item/{id}")
-    public ResponseEntity<Item> update(@PathVariable("id") long id, @RequestBody Item item) throws CustomException {
+    public ResponseEntity<Item> update(@PathVariable("id") long id, @RequestBody Item item) throws CustomException, ParseException {
         // request 유효성 체크
         if(id <= 0)
             throw new CustomBadRequestException(HttpStatus.BAD_REQUEST, Map.of("id", Long.toString(id)), "입력한 id가 잘못된 값입니다.");
