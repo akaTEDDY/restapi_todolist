@@ -8,6 +8,8 @@ import com.practice.restapi_todolist.exception.CustomNotFoundException;
 import com.practice.restapi_todolist.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -27,14 +29,15 @@ public class ItemService {
     }
 
     public List<Item> createItem(Item item) throws CustomException, ParseException {
-        // Item이 가진 usernick이 존재하는 user인지 확인
-        if(!itemRepository.checkMember(item.getUserNick()))
-            throw new CustomNotFoundException(HttpStatus.NOT_FOUND, Map.of("usernick", item.getUserNick()), "nick " + item.getUserNick() + "을 가진 Member가 존재하지 않습니다.");
+        // 로그인한 member의 nick을 usernick으로 설정
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        item.setUserNick(userDetails.getUsername());
 
         // Date 설정 + Date formatting
         item.setRegDate(sdf.parse(sdf.format(new Date())));
         item.setDueDate(sdf.parse(sdf.format(item.getDueDate())));
 
+        // RegDate와 DueDate가 오늘인 경우 DueDate가 먼저 설정되는 경우가 있음
         if(dateParse.format(item.getRegDate()).equals(dateParse.format(item.getDueDate())))
             item.setRegDate(sdf.parse(sdf.format(item.getDueDate())));
 

@@ -44,9 +44,6 @@ public class ItemController {
                             ),
                     "입력한 파라미터가 올바르지 않습니다.");
 
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        item.setUserNick(userDetails.getUsername());
-
         // item 생성 요청
         List<Item> items = Optional.ofNullable(itemService.createItem(item))
                                     .orElseThrow(() -> new CustomTooManyRequestsException(HttpStatus.TOO_MANY_REQUESTS, mapper.convertValue(item, Map.class), "주어진 파라미터로 아이템 생성이 불가합니다."));
